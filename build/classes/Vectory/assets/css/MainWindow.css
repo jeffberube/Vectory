@@ -1,0 +1,15 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 15-Mar-2015, 2:17:21 AM
+    Author     : Berube
+*/
+
+.mainWindow {
+    -fx-background-color: #222222; 
+    -fx-background-insets: 0px; 
+    -fx-padding: 0px;
+}

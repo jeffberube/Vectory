@@ -1,0 +1,40 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 15-Mar-2015, 1:49:07 AM
+    Author     : Berube
+*/
+
+.toolbarButton {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffffff;
+    -fx-padding: 0px;
+}
+
+.toolbarButton:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff33 0%, #ffffff00 70%, #ffffff33 100%);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 3px;
+    -fx-padding: 0px;
+}
+
+.toolbarButton:pressed {
+    -fx-background-color: transparent, linear-gradient(to bottom, #000000CC 0%, #00000000 70%, #000000CC 100%);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000CC;
+    -fx-border-radius: 3px;
+    -fx-padding: 0px;
+}
+
+.toolbarButton:selected {
+    -fx-background-color: transparent, linear-gradient(to bottom, #000000CC 0%, #ffffff33 70%, #000000CC 100%);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #ff7b00ff;
+    -fx-border-radius: 3px;
+    -fx-padding: 0px;
+}

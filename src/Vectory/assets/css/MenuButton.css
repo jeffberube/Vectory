@@ -1,0 +1,30 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 7-Mar-2015, 12:26:08 PM
+    Author     : Berube
+*/
+
+.menuButton {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffffff;
+    -fx-padding: 2px 8px 2px 8px;
+}
+
+.menuButton:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff33 0%, #ffffff00 70%, #ffffff33 100%);
+    -fx-text-fill: #ffffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 3px;
+}
+
+.menuButton:selected {
+    -fx-background-color: transparent, linear-gradient(to bottom, #111111CC 0%, #18181800 45%);
+    -fx-text-fill: #ffffffff;
+    -fx-border-color: #111111CC;
+    -fx-border-radius: 3px;
+}

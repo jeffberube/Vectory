@@ -1,0 +1,60 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 7-Mar-2015, 11:19:45 PM
+    Author     : Berube
+*/
+
+.documentTab {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-padding: 2px 4px 5px 8px;
+    -fx-background-insets: 0;
+    -fx-opacity: 0.5;
+}
+
+.documentTab:hover {
+    -fx-opacity: 1.0;
+    -fx-background-color: #333333;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #181818CC #181818CC #181818CC #181818CC;
+}
+
+.documentTab:selected {
+    -fx-opacity: 1.0;
+    -fx-background-color: #444444;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #181818CC #181818CC transparent #181818CC;
+    -fx-border-width: 1px;
+}
+
+#closeButton {
+    -fx-border-radius: 1px;
+    -fx-background-radius: 1px;
+    -fx-padding: 0px 2px 0px 2px;
+}
+
+#closeButton:hover {
+    -fx-background-color: linear-gradient(to bottom, #ffffff33 0%, #ffffff00 70%, #ffffff33 100%);
+    -fx-background-insets: 0px 1px 1px 1px;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 0px 2px 0px 2px;
+}
+
+#closeButton:pressed {
+    -fx-background-color: #222222, linear-gradient(to bottom, #111111CC 0%, #11111133 90%);
+    -fx-background-insets: 0px 1px 1px 1px;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 0px 2px 0px 2px;
+}

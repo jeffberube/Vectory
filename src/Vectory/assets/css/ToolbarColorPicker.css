@@ -1,0 +1,37 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 18-Mar-2015, 9:04:31 PM
+    Author     : Berube
+*/
+
+.toolbarColorPicker {
+    
+    
+}
+
+.strokeColorViewHolder {
+    -fx-fill: #ffffff;
+    -fx-border-color: #111111;
+    -fx-border-width: 1px;
+}
+
+.strokeColorView {
+    -fx-fill: #000000;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+
+.fillColorViewHolder {
+    -fx-fill: #ff7b00;
+}
+
+.fillColorView {
+    -fx-fill: #ffffff;
+    -fx-border-color: #000000;
+    -fx-border-width: 1px;
+}
+

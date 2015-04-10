@@ -1,0 +1,31 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 17-Mar-2015, 12:07:40 AM
+    Author     : Berube
+*/
+
+.windowControls {
+    -fx-padding: 0px 6px 0px 6px;  
+}
+
+#closeButton:hover {
+    -fx-background-color: #ff3300ff, linear-gradient(to bottom, #ffc14566 0%, #ffc14500 70%, #ffc14566 100%);
+    -fx-background-insets: 0px 1px 1px 1px;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 3px;
+    -fx-padding: 0px 6px 0px 6px;
+}
+
+#closeButton:pressed {
+    -fx-background-color: #ff3300ff, linear-gradient(to bottom, #111111CC 0%, #11111133 90%);
+    -fx-background-insets: 0px 1px 1px 1px;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #000000BB;
+    -fx-border-radius: 3px;
+    -fx-padding: 0px 6px 0px 6px;
+}

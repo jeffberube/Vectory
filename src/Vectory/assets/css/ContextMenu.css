@@ -1,0 +1,46 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 7-Mar-2015, 12:03:30 PM
+    Author     : Berube
+*/
+.scene {
+    -fx-mark-color: white;
+}
+    
+.context-menu {
+    -fx-background-color: #333333;
+    -fx-border-color: #111111;
+    -fx-text-fill: white;
+}
+
+.menu-item .label {
+    -fx-text-fill: white;
+    -fx-padding: 0px 0px 0px 4px;
+}
+
+.menu-item:hover, .menu-item:focused {
+    -fx-background-color: #ff7b00;
+}
+
+.context-menu .separator {
+    -fx-color: #555555;
+    
+}
+
+.check-menu-item:checked .check {
+    -fx-background-color: white;
+}
+
+.check-menu-item .menu-item-check {
+    -fx-background-color: white;
+    -fx-mark-color: white;
+}
+
+.check-menu-item:selected .menu-item-check {
+    -fx-background-color: white;
+    -fx-mark-color: white;
+}
