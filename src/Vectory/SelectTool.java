@@ -6,6 +6,7 @@
 package Vectory;
 
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -14,6 +15,8 @@ import javafx.scene.input.MouseEvent;
  */
 public class SelectTool implements Tool {
     private static SelectTool instance = null;
+    
+    private boolean selectMultiple = false;
     
     private SelectTool() {
     
@@ -30,16 +33,30 @@ public class SelectTool implements Tool {
         return Cursor.DEFAULT;
     }
     
-    public void mousePressedHandler(MouseEvent e) {
+    public void mouseEnteredHandler(MouseEvent e) {
+        if (!(e.getTarget() instanceof ResizeHandle) && !(e.getTarget() instanceof RotationHotspot))
+            Context.getActiveDocumentPane().setCursor(getCursor());
+    }
     
+    public void mousePressedHandler(MouseEvent e) {
+        Node target = (Node)e.getTarget();
+        
+        System.out.println(target + " " + target.getParent() + " " + target.getParent().getParent() + " " + e.isShiftDown());
+        
+        if ((!(target.getParent() instanceof VecObject) && !(target.getParent() instanceof TransformationBox))
+                || (target.getParent() instanceof VecObject && !e.isShiftDown()))         
+            Context.deselectAllObjects();
+        
+        else if (target instanceof VecObject)
+            ((VecObject)target.getParent()).setSelected(true);
     }
     
     public void mouseDraggedHandler(MouseEvent e){
-    
+        
     }
     
     public void mouseReleasedHandler(MouseEvent e){
-    
+        
     }
     
 }

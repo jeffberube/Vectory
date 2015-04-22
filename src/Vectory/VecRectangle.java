@@ -5,8 +5,8 @@
  */
 package Vectory;
 
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 
 /**
  *
@@ -19,13 +19,26 @@ public class VecRectangle extends VecObject {
         @param  layer   Parent layer for this object
     */
     public VecRectangle(Rectangle rectangle, Layer layer) {
-        super(layer);
+        super(layer, rectangle);
         this.rectangle = rectangle;
         init();
     }
     
     private void init() {
-        getChildren().add(rectangle);
+        initNodeProperties();
+        getChildren().add(0, rectangle);
+    }
+    
+    protected void initNodeProperties() {
+        nodeWidthProperty().bindBidirectional(rectangle.widthProperty());
+        nodeHeightProperty().bindBidirectional(rectangle.heightProperty());
+    }
+    
+    protected Shape getShapeDuplicate() {
+        Rectangle clone = new Rectangle(rectangle.getWidth(), rectangle.getHeight());
+        clone.setArcHeight(rectangle.getArcHeight());
+        clone.setArcWidth(rectangle.getArcWidth());
+        return clone;
     }
     
 }

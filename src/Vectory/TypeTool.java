@@ -30,6 +30,10 @@ public class TypeTool implements Tool {
         return Cursor.TEXT;
     }
     
+    public void mouseEnteredHandler(MouseEvent e) {
+        Context.getActiveDocumentPane().setCursor(getCursor());
+    }
+    
     public void mousePressedHandler(MouseEvent e) {
     
     }

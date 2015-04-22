@@ -30,6 +30,10 @@ public class SquiggleTool implements Tool {
         return Cursor.DEFAULT;
     }
     
+    public void mouseEnteredHandler(MouseEvent e) {
+        Context.getActiveDocumentPane().setCursor(getCursor());
+    }
+    
     public void mousePressedHandler(MouseEvent e) {
     
     }

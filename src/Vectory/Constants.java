@@ -26,8 +26,11 @@ public class Constants {
     public static final int TOOLBAR_BUTTON_HEIGHT = 32;
     public static final int TOOLBAR_COLOR_VIEW_FRAME_WIDTH = 4;
     
-    public static final int TRANSFORMATION_BOX_HANDLE_WIDTH = 4;
-    public static final int TRANSFORMATION_BOX_HANDLE_HEIGHT = 4;
+    public static final int TRANSFORMATION_BOX_HANDLE_WIDTH = 7;
+    public static final int TRANSFORMATION_BOX_HANDLE_HEIGHT = 7;
+    
+    public static final int TRANSFORMATION_BOX_ROTATION_HOTSPOT_WIDTH = 10;
+    public static final int TRANSFORMATION_BOX_ROTATION_HOTSPOT_HEIGHT = 10;
     
     public static final int WORKAREA_TOPBAR_HEIGHT = 40;
     public static final int WORKAREA_BOTTOMBAR_HEIGHT = 24;

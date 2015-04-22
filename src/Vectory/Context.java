@@ -5,6 +5,8 @@
  */
 package Vectory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.paint.Color;
 
@@ -21,6 +23,8 @@ public class Context {
     
     private final static SimpleObjectProperty<Color> fillColor = new SimpleObjectProperty(Color.WHITE);
     private final static SimpleObjectProperty<Color> strokeColor = new SimpleObjectProperty(Color.BLACK);
+    
+    private static ArrayList<VecObject> selectedObjects = new ArrayList();
     
     public VecDocument getActiveDocument() {
         return activeDocument.get();
@@ -45,6 +49,23 @@ public class Context {
     
     public static Layer getSelectedLayer() {
         return activeDocumentPane.get().getSelectedLayer();
+    }
+    
+    public static ArrayList<VecObject> getSelectedObjects() {
+        return selectedObjects;
+    }
+    
+    public static void addSelectedObject(VecObject object) {
+        selectedObjects.add(object);
+    }
+    
+    public static void deselectAllObjects() {
+        Iterator iterator = selectedObjects.iterator();
+        
+        while(iterator.hasNext())
+            ((VecObject)iterator.next()).setSelected(false);
+        
+        selectedObjects.clear();
     }
     
     public static Color getFillColor() {

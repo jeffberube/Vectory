@@ -86,11 +86,13 @@ public class MenuBar extends HBox {
     };
     
     private static final CheckMenuItem rulersItem = new CheckMenuItem("Show Rulers                ");
+    private static final CheckMenuItem modKeysItem = new CheckMenuItem("Show Modifiers Keys");
     
-    private static final MenuItem[] viewMenuItems = new MenuItem[]{rulersItem};
+    private static final MenuItem[] viewMenuItems = new MenuItem[]{rulersItem, modKeysItem};
     
     private static final KeyCodeCombination[] viewMenuAccelerators = new KeyCodeCombination[]{
-        new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN)                              // Show Rulers                        
+        new KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN),                              // Show Rulers 
+        null
     };
     
     private static final CheckMenuItem colorsItem = new CheckMenuItem("Colors");
@@ -144,7 +146,7 @@ public class MenuBar extends HBox {
         new SeparatorMenuItem(), cutItem, copyItem, pasteItem,
         new SeparatorMenuItem(), preferencesItem);
     
-    private static final ContextMenu viewMenu = new ContextMenu(rulersItem);
+    private static final ContextMenu viewMenu = new ContextMenu(rulersItem, modKeysItem);
     
     private static final ContextMenu windowMenu = new ContextMenu(colorsItem,
         fontsItem, historyItem, layersItem, objectPropertiesItem, toolbarItem, 
@@ -220,6 +222,14 @@ public class MenuBar extends HBox {
             instance = new MenuBar();
         
         return instance;
+    }
+    
+    public static BooleanProperty modKeysMenuItemCheckedProperty() {
+        return modKeysItem.selectedProperty();
+    }
+    
+    public static BooleanProperty rulersMenuItemCheckedProperty() {
+        return rulersItem.selectedProperty();
     }
     
     public static BooleanProperty colorsMenuItemCheckedProperty() {

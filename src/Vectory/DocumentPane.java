@@ -50,7 +50,7 @@ public class DocumentPane extends Pane {
     }
     
     private void setupMouseEventHandlers() {
-        setOnMouseEntered(e->setCursor(Context.getTool().getCursor()));
+        setOnMouseEntered(e->Context.getTool().mouseEnteredHandler(e));
         setOnMousePressed(e->Context.getTool().mousePressedHandler(e));
         setOnMouseDragged(e->Context.getTool().mouseDraggedHandler(e));
         setOnMouseReleased(e->Context.getTool().mouseReleasedHandler(e));

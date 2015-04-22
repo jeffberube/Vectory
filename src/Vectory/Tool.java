@@ -15,6 +15,8 @@ import javafx.scene.input.MouseEvent;
 public interface Tool {
     public abstract Cursor getCursor();
     
+    public abstract void mouseEnteredHandler(MouseEvent e);
+    
     public abstract void mousePressedHandler(MouseEvent e);
     
     public abstract void mouseDraggedHandler(MouseEvent e);

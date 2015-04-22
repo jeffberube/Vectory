@@ -7,6 +7,7 @@ package Vectory;
 
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -24,6 +25,12 @@ public class RectangleTool implements Tool {
     private double originLayoutX = 0;
     private double originLayoutY = 0;
     
+    private final String tooltipString = "UP/DOWN: Increase / decrease corner radius\n"
+                + "SHIFT: Square bounding box\n"
+                + "ALT: Origin is center";
+    
+    private Tooltip modKeysTooltip = null;
+
     private boolean creatingObject = false;
     private boolean squareFootprint = false;
     private boolean originIsCenter = false;
@@ -31,12 +38,6 @@ public class RectangleTool implements Tool {
     EventHandler keyPressedFilter = new EventHandler<KeyEvent>() {
                             public void handle(KeyEvent e) {
                                 keyPressedHandler(e);
-                            }
-                        };
-    
-    EventHandler keyReleasedFilter = new EventHandler<KeyEvent>() {
-                            public void handle(KeyEvent e) {
-                                keyReleasedHandler(e);
                             }
                         };
     
@@ -58,9 +59,17 @@ public class RectangleTool implements Tool {
         return Cursor.CROSSHAIR;
     }
     
+    public void mouseEnteredHandler(MouseEvent e) {
+        Context.getActiveDocumentPane().setCursor(this.getCursor());
+        e.consume();
+    }
+    
     public void mousePressedHandler(MouseEvent e) {
+        Context.deselectAllObjects();
         storeOriginMouseCoordinates(e);
         addKeyboardModifiers();
+        ViewOptions.setModKeysTooltipString(tooltipString);
+        e.consume();
     }
     
     public void mouseDraggedHandler(MouseEvent e){
@@ -70,14 +79,16 @@ public class RectangleTool implements Tool {
         if (!creatingObject)
             creatingObject = true;
         
+        ViewOptions.updateTooltipLocation(e.getScreenX() + 16, e.getScreenY() + 16);
+        
         double deltaX = e.getScreenX() - originMouseX;
         double deltaY = e.getScreenY() - originMouseY;
-        double newWidth = (int)(squareFootprint ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaX));
-        double newHeight = (int)(squareFootprint ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaY));
-        double newX = Snapper.fix(originIsCenter ? originLayoutX - newWidth : (deltaX < 0 ? originLayoutX - Math.abs(deltaX) : originLayoutX));
-        double newY = Snapper.fix(originIsCenter ? originLayoutY - newHeight : (deltaY < 0 ? originLayoutY - Math.abs(deltaY) : originLayoutY));
+        double newWidth = (int)(e.isShiftDown() ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaX));
+        double newHeight = (int)(e.isShiftDown() ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaY));
+        double newX = Snapper.fix(e.isAltDown() ? originLayoutX - newWidth : (deltaX < 0 ? originLayoutX - Math.abs(deltaX) : originLayoutX));
+        double newY = Snapper.fix(e.isAltDown() ? originLayoutY - newHeight : (deltaY < 0 ? originLayoutY - Math.abs(deltaY) : originLayoutY));
         
-        if (originIsCenter) {
+        if (e.isAltDown()) {
             newWidth *= 2;
             newHeight *= 2;
         }
@@ -86,10 +97,10 @@ public class RectangleTool implements Tool {
         newObject.setHeight(newHeight);
         newObject.setTranslateX(newX);
         newObject.setTranslateY(newY);
-        
     }
     
     public void mouseReleasedHandler(MouseEvent e){
+        ViewOptions.hideTooltip();   
         addObject();
         resetState();
         removeKeyboardModifiers();
@@ -107,7 +118,6 @@ public class RectangleTool implements Tool {
                 newObject.setArcWidth(newObject.getArcHeight());
                 break;
             case SHIFT:
-                squareFootprint = true;
                 newObject.setWidth(Math.max(newObject.getWidth(), newObject.getHeight()));
                 newObject.setHeight(newObject.getWidth());
                 if (originIsCenter) {
@@ -116,22 +126,10 @@ public class RectangleTool implements Tool {
                 }
                 break;
             case ALT:
-                originIsCenter = true;
                 newObject.setTranslateX(newObject.getTranslateX() - newObject.getWidth());
                 newObject.setTranslateY(newObject.getTranslateY() - newObject.getHeight());
                 newObject.setWidth(newObject.getWidth() * 2);
                 newObject.setHeight(newObject.getHeight() * 2);
-                break;
-        }
-    }
-    
-    public void keyReleasedHandler(KeyEvent e) {
-        switch(e.getCode()) {
-            case SHIFT:
-                squareFootprint = false;
-                break;
-            case ALT:
-                originIsCenter = false;
                 break;
         }
     }
@@ -145,12 +143,10 @@ public class RectangleTool implements Tool {
     
     private void addKeyboardModifiers() {
         Context.getActiveDocumentPane().getScene().addEventFilter(KeyEvent.KEY_PRESSED, keyPressedFilter); 
-        Context.getActiveDocumentPane().getScene().addEventFilter(KeyEvent.KEY_RELEASED, keyReleasedFilter);
     }
     
     private void removeKeyboardModifiers() {
         Context.getActiveDocumentPane().getScene().removeEventFilter(KeyEvent.KEY_PRESSED, keyPressedFilter);
-        Context.getActiveDocumentPane().getScene().removeEventFilter(KeyEvent.KEY_RELEASED, keyReleasedFilter);
     }
     
     private void createObject() {
@@ -164,8 +160,17 @@ public class RectangleTool implements Tool {
     }
     
     private void addObject() {
+        VecRectangle vr = new VecRectangle(newObject, Context.getSelectedLayer());
+
+        vr.setTranslateX(newObject.getTranslateX());
+        vr.setTranslateY(newObject.getTranslateY());
+        
+        newObject.setTranslateX(0);
+        newObject.setTranslateY(0);
+
         applyContextToObject();
-        Context.getSelectedLayer().getChildren().add(new VecRectangle(newObject, Context.getSelectedLayer()));
+        Context.getSelectedLayer().getChildren().add(vr);
+        //vr.setSelected(true);
     }
     
     private void applyContextToObject() {

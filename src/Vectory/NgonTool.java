@@ -30,6 +30,10 @@ public class NgonTool implements Tool {
         return Cursor.CROSSHAIR;
     }
     
+    public void mouseEnteredHandler(MouseEvent e) {
+        Context.getActiveDocumentPane().setCursor(getCursor());
+    }
+    
     public void mousePressedHandler(MouseEvent e) {
     
     }
