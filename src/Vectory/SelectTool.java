@@ -40,15 +40,16 @@ public class SelectTool implements Tool {
     
     public void mousePressedHandler(MouseEvent e) {
         Node target = (Node)e.getTarget();
+        Node parent = (Node)target.getParent();
         
-        System.out.println(target + " " + target.getParent() + " " + target.getParent().getParent() + " " + e.isShiftDown());
+        //System.out.println(target + " " + parent + " " + parent.getParent() + " " + e.isShiftDown());
         
-        if ((!(target.getParent() instanceof VecObject) && !(target.getParent() instanceof TransformationBox))
-                || (target.getParent() instanceof VecObject && !e.isShiftDown()))         
+        if ((!(parent instanceof VecObject) && !(parent instanceof TransformationBox))
+                || (parent instanceof VecObject && !e.isShiftDown()))         
             Context.deselectAllObjects();
         
         else if (target instanceof VecObject)
-            ((VecObject)target.getParent()).setSelected(true);
+            ((VecObject)parent).setSelected(true);
     }
     
     public void mouseDraggedHandler(MouseEvent e){

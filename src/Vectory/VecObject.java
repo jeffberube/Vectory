@@ -31,7 +31,7 @@ public abstract class VecObject extends Pane {
     
     private final SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
     
-    private final TransformationBox transformationBox;
+    private TransformationBox tBox = null;
     
     private Layer parentLayer;
     protected Node node;
@@ -39,14 +39,19 @@ public abstract class VecObject extends Pane {
     protected VecObject(Layer layer, Node node) {
         parentLayer = layer;
         this.node = node;
-        transformationBox = new TransformationBox(this);
         init();
     }
     
     private void init() {
         selected.addListener(e->{
-            if (selected.get())
+            if (selected.get()) {
                 Context.addSelectedObject(this);
+                tBox = TransformationBox.getInstance(this);
+                Context.getActiveDocumentPane().getChildren().add(tBox);
+            } else {
+                Context.getActiveDocumentPane().getChildren().remove(tBox);
+                tBox = null;
+            }
         });
         
         setOnMouseClicked(e->{
@@ -54,7 +59,6 @@ public abstract class VecObject extends Pane {
                 setSelected(true);
         });
         
-        getChildren().add(transformationBox);
     }
     
     protected abstract void initNodeProperties();

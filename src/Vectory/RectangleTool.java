@@ -41,6 +41,11 @@ public class RectangleTool implements Tool {
                             }
                         };
     
+    EventHandler keyReleasedFilter = new EventHandler<KeyEvent>() {
+                            public void handle(KeyEvent e) {
+                                keyReleasedHandler(e);
+                            }
+                        };
     
     private Rectangle newObject;
     
@@ -132,6 +137,12 @@ public class RectangleTool implements Tool {
                 newObject.setHeight(newObject.getHeight() * 2);
                 break;
         }
+        
+        e.consume();
+    }
+    
+     public void keyReleasedHandler(KeyEvent e) {
+
     }
     
     private void storeOriginMouseCoordinates(MouseEvent e) {
@@ -143,10 +154,12 @@ public class RectangleTool implements Tool {
     
     private void addKeyboardModifiers() {
         Context.getActiveDocumentPane().getScene().addEventFilter(KeyEvent.KEY_PRESSED, keyPressedFilter); 
+        Context.getActiveDocumentPane().getScene().addEventFilter(KeyEvent.KEY_PRESSED, keyReleasedFilter); 
     }
     
     private void removeKeyboardModifiers() {
         Context.getActiveDocumentPane().getScene().removeEventFilter(KeyEvent.KEY_PRESSED, keyPressedFilter);
+        Context.getActiveDocumentPane().getScene().removeEventFilter(KeyEvent.KEY_PRESSED, keyReleasedFilter); 
     }
     
     private void createObject() {
