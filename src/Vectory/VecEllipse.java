@@ -5,6 +5,7 @@
  */
 package Vectory;
 
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Shape;
 
@@ -15,6 +16,8 @@ import javafx.scene.shape.Shape;
 public class VecEllipse extends VecObject{
     private Ellipse ellipse;
     
+    /* Hack to deal with multiplication */
+    private boolean key = false;
     /*
         @param  layer   Parent layer for this object
     */
@@ -30,8 +33,49 @@ public class VecEllipse extends VecObject{
     }
     
     protected void initNodeProperties() {
-        ellipse.radiusXProperty().bind(nodeWidthProperty().divide(2));
-        ellipse.radiusYProperty().bind(nodeHeightProperty().divide(2));
+        //ellipse.radiusXProperty().bind(nodeWidthProperty().divide(2));
+        //ellipse.radiusYProperty().bind(nodeHeightProperty().divide(2));
+        
+        nodeWidthProperty().addListener(e->{
+            if (key)
+                key = false;
+            else {
+                key = true;
+                ellipse.setRadiusX(nodeWidthProperty().get() / 2);
+            }
+        });
+        
+        nodeHeightProperty().addListener(e->{
+            if (key)
+                key = false;
+            else {
+                key = true;
+                ellipse.setRadiusY(nodeHeightProperty().get() / 2);
+            }
+        });
+        
+        ellipse.radiusXProperty().addListener(e->{
+            if (key)
+                key = false;
+            else {
+                key = true;
+                nodeWidthProperty().set(ellipse.getRadiusX() * 2);
+            }
+        });
+        
+        ellipse.radiusYProperty().addListener(e->{
+            if (key)
+                key = false;
+            else {
+                key = true;
+                nodeHeightProperty().set(ellipse.getRadiusY() * 2);
+            }
+        });
+        
+        nodeWidthProperty().set(ellipse.getRadiusX() * 2);
+        nodeHeightProperty().set(ellipse.getRadiusY() * 2);
+        ellipse.centerXProperty().bind(widthProperty().divide(2));
+        ellipse.centerYProperty().bind(heightProperty().divide(2));
         ellipse.fillProperty().bind(super.fillColorProperty());
         ellipse.strokeProperty().bind(super.strokeColorProperty());
     }

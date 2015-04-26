@@ -87,9 +87,7 @@ public abstract class VecObject extends Pane {
     public SimpleObjectProperty<Color> strokeColorProperty() {
         return strokeColor;
     }
-    
-    
-    
+
     public Layer getParentLayer() {
         return parentLayer;
     }

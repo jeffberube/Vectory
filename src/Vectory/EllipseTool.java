@@ -90,8 +90,8 @@ public class EllipseTool implements Tool {
         double deltaY = e.getScreenY() - originMouseY;
         double newWidth = (int)(e.isShiftDown() ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaX));
         double newHeight = (int)(e.isShiftDown() ? Math.abs(Math.max(deltaX, deltaY)) : Math.abs(deltaY));
-        double newX = Snapper.fix(e.isAltDown() ? originLayoutX - newWidth : (deltaX < 0 ? originLayoutX - Math.abs(deltaX) : originLayoutX));
-        double newY = Snapper.fix(e.isAltDown() ? originLayoutY - newHeight : (deltaY < 0 ? originLayoutY - Math.abs(deltaY) : originLayoutY));
+        double newX = Snapper.fix(e.isAltDown() ? originLayoutX : originLayoutX + (newWidth / 2));
+        double newY = Snapper.fix(e.isAltDown() ? originLayoutY : originLayoutY + (newHeight /2));
         
         if (e.isAltDown()) {
             newWidth *= 2;
@@ -167,22 +167,22 @@ public class EllipseTool implements Tool {
     }
     
     private void addObject() {
-        VecEllipse vr = new VecEllipse(newObject, Context.getSelectedLayer());
+        VecEllipse ve = new VecEllipse(newObject, Context.getSelectedLayer());
 
-        vr.setTranslateX(newObject.getTranslateX());
-        vr.setTranslateY(newObject.getTranslateY());
+        ve.setTranslateX(newObject.getTranslateX() - newObject.getRadiusX());
+        ve.setTranslateY(newObject.getTranslateY() - newObject.getRadiusY());
         
         newObject.setTranslateX(0);
         newObject.setTranslateY(0);
 
-        applyContextToObject(vr);
-        Context.getSelectedLayer().getChildren().add(vr);
+        applyContextToObject(ve);
+        Context.getSelectedLayer().getChildren().add(ve);
         //vr.setSelected(true);
     }
     
-    private void applyContextToObject(VecEllipse vr) {
-        vr.setFillColor(Context.getFillColor());
-        vr.setStrokeColor(Context.getStrokeColor());
+    private void applyContextToObject(VecEllipse ve) {
+        ve.setFillColor(Context.getFillColor());
+        ve.setStrokeColor(Context.getStrokeColor());
     }
     
     private void resetState() {
