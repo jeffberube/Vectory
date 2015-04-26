@@ -21,7 +21,7 @@ import javafx.scene.paint.Color;
  */
 public class Layer extends Pane implements Toggle {
     private static Color[] layerColors = new Color[] {Color.AQUA, Color.DEEPPINK, 
-        Color.FUCHSIA, Color.LAWNGREEN, Color.YELLOW, Color.RED, Color.MAGENTA,
+        Color.FUCHSIA, Color.LAWNGREEN, Color.RED, Color.MAGENTA,
         Color.MEDIUMBLUE, Color.ROYALBLUE, Color.SKYBLUE, Color.SILVER};
 
     private boolean locked = true;

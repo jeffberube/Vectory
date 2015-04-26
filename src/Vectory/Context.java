@@ -57,13 +57,24 @@ public class Context {
     
     public static void addSelectedObject(VecObject object) {
         selectedObjects.add(object);
+        if (selectedObjects.size() == 1) {
+            fillColor.bindBidirectional(object.fillColorProperty());
+            strokeColor.bindBidirectional(object.strokeColorProperty());
+            //object.fillColorProperty().bindBidirectional(fillColor);
+            //object.strokeColorProperty().bindBidirectional(strokeColor);
+        }   
     }
     
     public static void deselectAllObjects() {
         Iterator iterator = selectedObjects.iterator();
+        VecObject object;
         
-        while(iterator.hasNext())
-            ((VecObject)iterator.next()).setSelected(false);
+        while(iterator.hasNext()) {
+            object = (VecObject)iterator.next();
+            object.setSelected(false);
+            object.fillColorProperty().unbindBidirectional(fillColor);
+            object.strokeColorProperty().unbindBidirectional(strokeColor);
+        }
         
         selectedObjects.clear();
     }

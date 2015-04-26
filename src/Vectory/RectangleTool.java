@@ -26,7 +26,7 @@ public class RectangleTool implements Tool {
     private double originLayoutY = 0;
     
     private final String tooltipString = "UP/DOWN: Increase / decrease corner radius\n"
-                + "SHIFT: Square bounding box\n"
+                + "SHIFT: Square\n"
                 + "ALT: Origin is center";
     
     private Tooltip modKeysTooltip = null;
@@ -181,14 +181,14 @@ public class RectangleTool implements Tool {
         newObject.setTranslateX(0);
         newObject.setTranslateY(0);
 
-        applyContextToObject();
+        applyContextToObject(vr);
         Context.getSelectedLayer().getChildren().add(vr);
         //vr.setSelected(true);
     }
     
-    private void applyContextToObject() {
-        newObject.setFill(Context.getFillColor());
-        newObject.setStroke(Context.getStrokeColor());
+    private void applyContextToObject(VecRectangle vr) {
+        vr.setFillColor(Context.getFillColor());
+        vr.setStrokeColor(Context.getStrokeColor());
     }
     
     private void resetState() {

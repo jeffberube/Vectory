@@ -93,8 +93,6 @@ public class TransformationBox extends Pane {
     private double originMouseTheta = 0;
     private double originMouseX = 0;
     private double originMouseY = 0;
-    private double originLayoutX = 0;
-    private double originLayoutY = 0;
 
     private double originShapeX = 0;
     private double originShapeY = 0;
@@ -102,8 +100,6 @@ public class TransformationBox extends Pane {
     private double originShapeHeight = 0;
     private double originShapeRatio = 0;        // Width / Height
     private double originShapeTheta = 0;
-    private double originShapePivotX = 0;
-    private double originShapePivotY = 0;
     
     private Rotate originRotate = null;
     private Rotate shadowRotate = null;
@@ -114,8 +110,9 @@ public class TransformationBox extends Pane {
     private Bounds originSceneBounds = null;
     private Bounds sceneBounds = null;
     
-    private String rotationTooltipString = "SHIFT: 45\u00B0 steps";
-    private String resizeTooltipString = "SHIFT: Preserve Aspect Ratio\n"
+    private final String moveTooltipString = "SHIFT: Lock Direction";
+    private final String rotationTooltipString = "SHIFT: 45\u00B0 steps";
+    private final String resizeTooltipString = "SHIFT: Preserve Aspect Ratio\n"
                                         + "ALT: Mirror Transform About Center";
     
     private boolean stepRotate = false;
@@ -134,8 +131,8 @@ public class TransformationBox extends Pane {
     }
     
     private void init() {
-        updateOriginRotate();
-        updateShadowRotate();
+        initOriginRotate();
+        initShadowRotate();
         
         initBox();
         initHandles();
@@ -153,7 +150,7 @@ public class TransformationBox extends Pane {
         updateSceneBounds();
     }
     
-    private void updateOriginRotate() {
+    private void initOriginRotate() {
         originRotate = getVecObjectRotate();
         if (originRotate == null) {
             originRotate = new Rotate(0, vecObject.getShapeWidth() / 2, vecObject.getShapeHeight() / 2);
@@ -161,21 +158,24 @@ public class TransformationBox extends Pane {
         }
     }
     
-    private void updateShadowRotate() {
+    private void initShadowRotate() {
         if (shadowRotate == null)
             shadowRotate = new Rotate(originRotate.getAngle(), originRotate.getPivotX(), originRotate.getPivotY());
-        else {
-            shadowRotate.setAngle(originRotate.getAngle());
-            shadowRotate.setPivotX(originRotate.getPivotX());
-            shadowRotate.setPivotY(originRotate.getPivotY());
-        }    
+        else 
+            updateShadowRotate();
+    }
+    
+    private void updateShadowRotate() {
+        shadowRotate.setAngle(originRotate.getAngle());
+        shadowRotate.setPivotX(originRotate.getPivotX());
+        shadowRotate.setPivotY(originRotate.getPivotY());
     }
     
     private void initBox() {
         box.setTranslateX(-1);
         box.setTranslateY(-1);
-        box.widthProperty().bind(vecObject.nodeWidthProperty().add(2));
-        box.heightProperty().bind(vecObject.nodeHeightProperty().add(2));
+        box.setWidth(vecObject.nodeWidthProperty().get() + 2);
+        box.setHeight(vecObject.nodeHeightProperty().get() + 2);
         box.strokeProperty().bind(vecObject.getParentLayer().layerColorProperty());
         box.setFill(Color.TRANSPARENT);
         
@@ -184,6 +184,9 @@ public class TransformationBox extends Pane {
     
     private void setupBoxMouseEvents() {
         box.setOnMouseEntered(e->setCursor(Cursor.MOVE));
+        box.setOnMousePressed(e->movePressedHandler(e));
+        box.setOnMouseDragged(e->moveDraggedHandler(e));
+        box.setOnMouseReleased(e->moveReleasedHandler(e));
         box.setOnMouseExited(e->setCursor(Context.getTool().getCursor()));
     }
     
@@ -318,7 +321,12 @@ public class TransformationBox extends Pane {
         sceneBounds = vecObject.localToScene(vecObject.getBoundsInLocal());
     }
     
-    
+    private double computeTopLeftToMouse(MouseEvent e) {
+        Point2D topLeft = vecObject.localToScene(0, 0);
+        double x1x2 = Math.pow(e.getSceneX() - topLeft.getX(), 2);
+        double y1y2 = Math.pow(e.getSceneY() - topLeft.getY(), 2);
+        return Math.sqrt(x1x2 + y1y2);
+    }
     
     private double computeCenterToMouse(MouseEvent e) {
         //updateSceneBounds();
@@ -328,10 +336,10 @@ public class TransformationBox extends Pane {
         return Math.sqrt(x1x2 + y1y2);
     }
     
-    private double computeTheta(MouseEvent e) {
-        Point2D center = vecObject.localToScene(originShapeWidth / 2, originShapeHeight / 2);
-        double deltaX = e.getSceneX() - (sceneBounds.getMinX() + (sceneBounds.getWidth() / 2));
-        double deltaY = e.getSceneY() - (sceneBounds.getMinY() + (sceneBounds.getHeight() / 2));
+    private double computeMouseTheta(MouseEvent e) {
+        Point2D center = vecObject.localToScene(originRotate.getPivotX(), originRotate.getPivotY());
+        double deltaX = e.getSceneX() - center.getX();
+        double deltaY = e.getSceneY() - center.getY();
         return Math.atan2(deltaY, deltaX);
     }
     
@@ -346,12 +354,12 @@ public class TransformationBox extends Pane {
     }
     
     private double getRotationDelta(MouseEvent e) {
-        return computeTheta(e) - originMouseTheta;
+        return computeMouseTheta(e) - originMouseTheta;
     }
     
     private int getCursorIndex(MouseEvent e) {
         updateSceneBounds();
-        double theta = computeTheta(e) + Math.PI - (Math.PI / 8);
+        double theta = computeMouseTheta(e) + Math.PI - (Math.PI / 8);
 
         if (theta < 0)
             theta = (Math.PI * 2) + theta;
@@ -366,24 +374,48 @@ public class TransformationBox extends Pane {
     private ImageCursor getRotationCursor(MouseEvent e) {
         return cursorsRotate[getCursorIndex(e)];
     }
+    
+    private void movePressedHandler(MouseEvent e) {
+        recordInitialState(e);
+        ViewOptions.setModKeysTooltipString(moveTooltipString);
+    }
+    
+    private void moveDraggedHandler(MouseEvent e) {
+        if (shadowShape == null)
+            createShadowShape();
+        
+        setHandlesVisible(false);
+        
+        setTranslateX(originShapeX + (e.getScreenX() - originMouseX));
+        setTranslateY(originShapeY + (e.getScreenY() - originMouseY));
+    }
+    
+    private void moveReleasedHandler(MouseEvent e) {
+        ViewOptions.hideTooltip();
+        applyMove(e);
+        destroyShadowShape();
+        setHandlesVisible(true);
+    }
+    
+    private void applyMove(MouseEvent e) {
+        vecObject.setTranslateX(getTranslateX());
+        vecObject.setTranslateY(getTranslateY());
+    }
 
     private void resizePressedHandler(MouseEvent e) {
-        storeOriginMouseCoordinates(e);
-        storeOriginShapeMetrics(e);
-        prepareForResize();
-        updateSceneBounds();
-        
-        box.widthProperty().unbind();
-        box.heightProperty().unbind();
-        
+        recordInitialState(e);
         ViewOptions.setModKeysTooltipString(resizeTooltipString);
     }
     
-    private void storeOriginMouseCoordinates(MouseEvent e) {
+    private void recordInitialState(MouseEvent e) {
+        storeOriginMouseState(e);
+        storeOriginShapeMetrics(e);
+    }
+    
+    private void storeOriginMouseState(MouseEvent e) {
         originMouseX = e.getScreenX();
         originMouseY = e.getScreenY();
-        originLayoutX = e.getX();
-        originLayoutY = e.getY();
+        originMouseTheta = computeMouseTheta(e);
     }
     
     private void storeOriginShapeMetrics(MouseEvent e) {
@@ -394,22 +426,20 @@ public class TransformationBox extends Pane {
         originShapeRatio = originShapeWidth / originShapeHeight;
         originShapeTheta = Math.toRadians(originRotate.getAngle());
         
-    }
-    
-    private void prepareForResize() {
-        updateOriginRotate();
-        updateShadowRotate();
+        updateSceneBounds();
     }
     
     private void resizeDraggedHandler(MouseEvent e) {
         boolean altDown = e.isAltDown();
         boolean shiftDown = e.isShiftDown();
         
-        double newX = 0, newY = 0, newWidth = 0, newHeight = 0, newPivotX = 0, newPivotY = 0, diffWidth = 0;
+        double newX = 0, newY = 0, newWidth = 0, newHeight = 0, newPivotX = 0, newPivotY = 0, diffWidth = 0, diffHeight = 0;
         
+        double topLeftToMouse = computeTopLeftToMouse(e);
         double centerToMouse = computeCenterToMouse(e);
-        double verticalDistance = Math.sin(computeTheta(e) - Math.toRadians(originRotate.getAngle())) * centerToMouse;
-        double horizontalDistance = Math.cos(computeTheta(e) - Math.toRadians(originRotate.getAngle())) * centerToMouse;
+        double verticalDistance = Math.sin(computeMouseTheta(e) - Math.toRadians(originRotate.getAngle())) * centerToMouse;
+        double horizontalDistance = Math.cos(computeMouseTheta(e) - Math.toRadians(originRotate.getAngle())) * centerToMouse;
+        double tempAspectRatio = ((originShapeWidth / 2) + horizontalDistance) / ((originShapeHeight / 2) + verticalDistance);
         
         double deltaX = horizontalDistance - (originShapeWidth / 2);
         double deltaY = verticalDistance - (originShapeHeight / 2);
@@ -426,66 +456,120 @@ public class TransformationBox extends Pane {
         setHandlesVisible(false);
         ViewOptions.updateTooltipLocation(e.getScreenX() + 16, e.getScreenY() + 16);
         
-        switch (((ResizeHandle)e.getTarget()).getHandlePosition()) {
-            case ResizeHandle.TOP_LEFT:
-            case ResizeHandle.TOP_RIGHT:
-            case ResizeHandle.BOTTOM_LEFT:
-            case ResizeHandle.BOTTOM_RIGHT:
-                if (shiftDown) {
-                    if (distanceRatio > originShapeRatio) {
-                        newHeight = (int)Math.abs(altDown ? altHeight : height);
-                        newWidth = (int)(newHeight * originShapeRatio);
-                    } else {
-                        newWidth = (int)Math.abs(altDown ? altWidth : width);
-                        newHeight = (int)(newWidth / originShapeRatio);
-                    }           
-                } else {
-                    newWidth = (int)Math.abs(altDown ? altWidth : width);
-                    newHeight = (int)Math.abs(altDown ? altHeight : height);
-                }
-                break;
-                
+        switch (((ResizeHandle)e.getTarget()).getHandlePosition()) {  
             case ResizeHandle.LEFT:
                 newWidth = (int)(altDown ? Math.abs(altWidth) : (deltaX > 0 ? deltaX : originShapeWidth - width));
                 newHeight = (int)(shiftDown? newWidth / originShapeRatio : originShapeHeight);
-                newX = altDown ? (deltaX < -originShapeWidth / 2 ? originShapeWidth + deltaX : -deltaX) : (deltaX > 0 ? originShapeWidth : originShapeWidth + deltaX);
+                newX = altDown ? (deltaX < -originShapeWidth / 2 ? width : -deltaX) : (deltaX > 0 ? originShapeWidth : width);
                 newY = shiftDown? (originShapeHeight - newHeight) / 2 : 0;
                 diffWidth = newWidth - originShapeWidth;
-                shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? diffWidth + (originShapeWidth / 2) : (deltaX > 0 ? -originRotate.getPivotX() : originRotate.getPivotX() + diffWidth)));
-                shadowRotate.setPivotY(shiftDown ? newHeight / 2 : originShapeHeight / 2);
-                //System.out.println("\rdeltaX: " + deltaX + "    deltaY: " + deltaY + "    diffWidth: " + diffWidth + "\r");
+                shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX > 0 ? -originRotate.getPivotX() : originRotate.getPivotX() + diffWidth));
+                shadowRotate.setPivotY(shiftDown ? newHeight / 2 : originRotate.getPivotY());
                 break;
                 
             case ResizeHandle.RIGHT:
                 newWidth = (int)Math.abs(altDown ? altWidth : width);
                 newHeight = (int)(shiftDown? newWidth / originShapeRatio : originShapeHeight);
-                newX = altDown ? (deltaX < -originShapeWidth / 2 ? originShapeWidth + deltaX : -deltaX) : (deltaX < -originShapeWidth ? -newWidth : 0);
+                newX = altDown ? (deltaX < -originShapeWidth / 2 ? width : -deltaX) : (deltaX < -originShapeWidth ? -newWidth : 0);
                 newY = shiftDown? (originShapeHeight - newHeight) / 2 : 0;
-                shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? (originShapeWidth / 2) + newWidth : originShapeWidth / 2));
-                shadowRotate.setPivotY(shiftDown ? newHeight / 2 : originShapeHeight / 2);
-                break;
-                
-            case ResizeHandle.BOTTOM:
-                
+                shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? originRotate.getPivotX() + newWidth : originRotate.getPivotX()));
+                shadowRotate.setPivotY(shiftDown ? newHeight / 2 : originRotate.getPivotY());
                 break;
                 
             case ResizeHandle.TOP:
+                newHeight = (int)(altDown ? Math.abs(altHeight) : (deltaY > 0 ? deltaY : originShapeHeight - height));
+                newWidth = (int)(shiftDown? newHeight * originShapeRatio : originShapeWidth);
+                newY = altDown ? (deltaY < -originShapeHeight / 2 ? height : -deltaY) : (deltaY > 0 ? originShapeHeight : height);
+                newX = shiftDown? (originShapeWidth - newWidth) / 2 : 0;
+                diffHeight = newHeight - originShapeHeight;
+                shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY > 0 ? -originRotate.getPivotY() : originRotate.getPivotY() + diffHeight));
+                shadowRotate.setPivotX(shiftDown ? newWidth / 2 : originRotate.getPivotX());
+                break;
+                
+            case ResizeHandle.BOTTOM:
                 newHeight = (int)Math.abs(altDown ? altHeight : height);
+                newWidth = (int)(shiftDown? newHeight * originShapeRatio : originShapeWidth);
+                newY = altDown ? (deltaY < -originShapeHeight / 2 ? height : -deltaY) : (deltaY < -originShapeHeight ? -newHeight : 0);
+                newX = shiftDown? (originShapeWidth - newWidth) / 2 : 0;
+                shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY < -originShapeHeight ? originRotate.getPivotY() + newHeight : originRotate.getPivotY()));
+                shadowRotate.setPivotX(shiftDown ? newWidth / 2 : originRotate.getPivotX());
+                break;
+                
+                
+                
+            case ResizeHandle.BOTTOM_LEFT:
                 if (shiftDown) {
-                    newWidth = (int)(newHeight * originShapeRatio);
-                    newX = altDown ? (deltaX < -originShapeWidth / 2 ? originShapeWidth + deltaX : -deltaX) : (deltaX < -originShapeWidth ? -newWidth : 0);
-                    newY = altDown ? (deltaY < -originShapeHeight / 2 ? originShapeHeight + deltaY : -deltaY) : (deltaY < -originShapeHeight ? -newHeight : 0);
+                    if (Math.abs(tempAspectRatio) > originShapeRatio) {
+                        newHeight = (int)(altDown ? Math.abs(altHeight) : (deltaY < -originShapeHeight ? deltaY : originShapeHeight - height));
+                        newWidth = (int)(newHeight * originShapeRatio);
+                        System.out.println("> dX: " + deltaX + "\tdY: " + deltaY + "\ttAS: " + tempAspectRatio);
+                        newX = altDown ? (originShapeWidth - newWidth) / 2 : (deltaX > 0 ? originShapeWidth : originShapeWidth - newWidth);
+                        newY = altDown ? (originShapeHeight - newHeight) / 2 : (newX > originShapeWidth ? -newHeight : 0);
+                    } else {
+                        newWidth = (int)(altDown ? Math.abs(altWidth) : (deltaX > 0 ? deltaX : originShapeWidth - width));
+                        newHeight = (int)(newWidth / originShapeRatio);
+                        System.out.println("< dX: " + deltaX + "\tdY: " + deltaY + "\ttAS: " + tempAspectRatio);
+                        newY = altDown ? (originShapeHeight - newHeight) / 2 : (deltaY < -originShapeHeight ? -newHeight : 0);
+                        newX = altDown ? (originShapeWidth - newWidth) / 2 : (newY < 0 ? -newWidth : originShapeWidth - newWidth);
+                    }
+                    shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY < -originShapeHeight ? originRotate.getPivotY() + newHeight : originRotate.getPivotY()));
+                    shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? originRotate.getPivotX() + newWidth : originRotate.getPivotX()));
                 } else {
-                    newWidth = (int)originShapeWidth;
-                    newX = 0;
-                    newY = altDown ? (deltaY < -originShapeHeight / 2 ? originShapeHeight + deltaY : -deltaY) : (deltaY < -originShapeHeight ? -newHeight : 0);
+                    newWidth = (int)(altDown ? Math.abs(altWidth) : (deltaX > 0 ? deltaX : originShapeWidth - width));
+                    newHeight = (int)Math.abs(altDown ? altHeight : height);
+                    newX = altDown ? (originShapeWidth - newWidth) / 2 : (deltaX > 0 ? originShapeWidth : width);
+                    newY = altDown ? (originShapeHeight - newHeight) / 2 : (deltaY < -originShapeHeight ? -newHeight : 0);
+                    shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX > 0 ? -originRotate.getPivotX() : originRotate.getPivotX() + diffWidth));
+                    shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY < -originShapeHeight ? originRotate.getPivotY() + newHeight : originRotate.getPivotY()));
                 }
                 break;
+            
+                
+                
+                
+                
+                
+                
+            case ResizeHandle.BOTTOM_RIGHT:
+                if (shiftDown) {
+                    if (Math.abs(tempAspectRatio) > originShapeRatio) {
+                        newHeight = (int)Math.abs(altDown ? altHeight : height);
+                        newWidth = (int)(newHeight * originShapeRatio);
+                        newX = altDown? (originShapeWidth - newWidth) / 2 : (deltaX < -originShapeWidth ? -newWidth : 0);
+                        newY = altDown ? (originShapeHeight - newHeight) / 2 : (newX < 0 ? -newHeight : 0);
+                    } else {
+                        newWidth = (int)Math.abs(altDown ? altWidth : width);
+                        newHeight = (int)(newWidth / originShapeRatio);
+                        newY = altDown ? (originShapeHeight - newHeight) / 2 : (deltaY < -originShapeHeight ? -newHeight : 0);
+                        newX = altDown ? (originShapeWidth - newWidth) / 2 : (newY < 0 ? -newWidth : 0);
+                    }
+                    shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY < -originShapeHeight ? originRotate.getPivotY() + newHeight : originRotate.getPivotY()));
+                    shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? originRotate.getPivotX() + newWidth : originRotate.getPivotX()));
+                } else {
+                    newWidth = (int)Math.abs(altDown ? altWidth : width);
+                    newHeight = (int)Math.abs(altDown ? altHeight : height);
+                    newX = altDown ? (originShapeWidth - newWidth) / 2 : (deltaX < -originShapeWidth ? -newWidth : 0);
+                    newY = altDown ? (originShapeHeight - newHeight) / 2 : (deltaY < -originShapeHeight ? -newHeight : 0);
+                    shadowRotate.setPivotX(altDown ? newWidth / 2 : (deltaX < -originShapeWidth ? originRotate.getPivotX() + newWidth : originRotate.getPivotX()));
+                    shadowRotate.setPivotY(altDown ? newHeight / 2 : (deltaY < -originShapeHeight ? originRotate.getPivotY() + newHeight : originRotate.getPivotY()));
+                }
+                break;
+                
+                
+                
+                
+                
+                
+                
+                
+            
+                
+            case ResizeHandle.TOP_LEFT:
+            case ResizeHandle.TOP_RIGHT:
+            
+            
+                break;
         }
-        
-        
-        //System.out.print("originShapeWidth:" + originShapeWidth + " nX:" + newX + " nY:" + newY + " dX:" + deltaX + " dY:" + deltaY + " bX:" + box.getTranslateX()+ "\r");
-        //System.out.print(this.getBoundsInParent().toString() + "\r");
 
         box.setWidth(newWidth + 2);
         box.setHeight(newHeight + 2);
@@ -496,15 +580,35 @@ public class TransformationBox extends Pane {
     
     private void resizeReleasedHandler(MouseEvent e) {
         ViewOptions.hideTooltip();
+        applyResize(e);
+        destroyShadowShape();
+        setHandlesVisible(true);
+    }
+    
+    private void applyResize(MouseEvent e) {
+        Bounds newBounds = localToParent(box.getBoundsInParent());
+        double newCenterX = ((newBounds.getMaxX() - newBounds.getMinX()) / 2) + newBounds.getMinX();
+        double newCenterY = ((newBounds.getMaxY() - newBounds.getMinY()) / 2) + newBounds.getMinY();
+        double newWidth = shadowShape.getWidth() - 2;
+        double newHeight = shadowShape.getHeight() - 2;
+        
+        originRotate.setPivotX(newWidth / 2);
+        originRotate.setPivotY(newHeight / 2);
+        vecObject.setShapeWidth(newWidth);
+        vecObject.setShapeHeight(newHeight);
+        vecObject.setTranslateX(newCenterX - (newWidth / 2));
+        vecObject.setTranslateY(newCenterY - (newHeight / 2));
     }
     
     private void rotatePressedHandler(MouseEvent e) {
-        updateOriginRotate();
-        
-        originMouseTheta = computeTheta(e);
+        originMouseTheta = computeMouseTheta(e);
         originShapeTheta = Math.toRadians(originRotate.getAngle());
+
+        setTranslateX(vecObject.getTranslateX());
+        setTranslateY(vecObject.getTranslateY());
         
-        addKeyboardModifiers();
+        updateShadowRotate();
+
         ViewOptions.setModKeysTooltipString(rotationTooltipString);
     }
     
@@ -527,24 +631,18 @@ public class TransformationBox extends Pane {
         
         deltaInDegrees = Math.toDegrees(rotationDelta);
         
-        shadowRotate.setAngle(deltaInDegrees);
+        shadowRotate.setAngle(deltaInDegrees + Math.toDegrees(originShapeTheta));
     }
     
     private void rotateReleasedHandler(MouseEvent e) {
         ViewOptions.hideTooltip();
         destroyShadowShape();
         applyRotation(e);
-        removeKeyboardModifiers();
         setHandlesVisible(true);
     }
     
     private void applyRotation(MouseEvent e) {
-        box.setRotate(0);
-        
-        updateOriginRotate();
-        originRotate.setAngle(Math.toDegrees(originShapeTheta) + deltaInDegrees);
-        
-        updateShadowRotate();
+        originRotate.setAngle(shadowRotate.getAngle());
     }
     
     private void setHandlesVisible(boolean value) {
@@ -603,5 +701,10 @@ public class TransformationBox extends Pane {
             instance = new TransformationBox(object);
             
         return instance;
+    }
+    
+    private void dumpValues() {
+        System.out.println("vecobj \t\tX: " + vecObject.getTranslateX() + "\t\tY: " + vecObject.getTranslateY() + "\t\tpX: " + originRotate.getPivotX() + "\t\tpY: " + originRotate.getPivotY() + "\t\tW: " + vecObject.getWidth() + "\t\tH:" + vecObject.getHeight());
+        System.out.println("this \t\tX: " + getTranslateX() + "\t\tY: " + getTranslateY() + "\t\tpX: " + shadowRotate.getPivotX() + "\t\tpY: " + shadowRotate.getPivotY() + "\t\tW: " + getWidth() + "\t\tH:" + getHeight());
     }
 }

@@ -64,6 +64,32 @@ public abstract class VecObject extends Pane {
     protected abstract void initNodeProperties();
     protected abstract Shape getShapeDuplicate();
     
+    public void setFillColor(Color value) {
+        fillColor.set(value);
+    }
+    
+    public Color getFillColor() {
+        return fillColor.get();
+    }
+    
+    public SimpleObjectProperty<Color> fillColorProperty() {
+        return fillColor;
+    }
+    
+    public void setStrokeColor(Color value) {
+        strokeColor.set(value);
+    }
+    
+    public Color getStrokeColor() {
+        return strokeColor.get();
+    }
+    
+    public SimpleObjectProperty<Color> strokeColorProperty() {
+        return strokeColor;
+    }
+    
+    
+    
     public Layer getParentLayer() {
         return parentLayer;
     }

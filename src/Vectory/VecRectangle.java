@@ -32,6 +32,8 @@ public class VecRectangle extends VecObject {
     protected void initNodeProperties() {
         nodeWidthProperty().bindBidirectional(rectangle.widthProperty());
         nodeHeightProperty().bindBidirectional(rectangle.heightProperty());
+        rectangle.fillProperty().bind(super.fillColorProperty());
+        rectangle.strokeProperty().bind(super.strokeColorProperty());
     }
     
     protected Shape getShapeDuplicate() {
