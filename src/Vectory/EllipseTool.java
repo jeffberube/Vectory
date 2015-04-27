@@ -25,9 +25,8 @@ public class EllipseTool implements Tool {
     private double originLayoutX = 0;
     private double originLayoutY = 0;
     
-    private final String tooltipString = "UP/DOWN: Increase / decrease corner radius\n"
-                + "SHIFT: Circle\n"
-                + "ALT: Origin is center";
+    private final String tooltipString = "SHIFT: Circle\n"
+                                        + "ALT: Origin is center";
     
     private Tooltip modKeysTooltip = null;
 
